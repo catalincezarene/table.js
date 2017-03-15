@@ -1,16 +1,7 @@
+import attachEventListener from './util/attach-event-listener';
+import toNode from './util/to-node';
+
 let Body = (props = {}) => {
-    let elementModifier = (element, props, obj, payload) => {
-        if (props.afterCreateElement) {
-            props.afterCreateElement(element, props, obj, payload);
-        }
-
-        if (props.addEventListener) {
-            props.addEventListener.forEach(param => {
-                element.addEventListener(param.type, param.listener, param.useCapture || false);
-            });
-        }
-    };
-
     let processPayload = (element, props, obj, payload) => {
         payload.forEach(payload => {
             Object.values(props.row).forEach(name => {
@@ -19,16 +10,13 @@ let Body = (props = {}) => {
         });
     };
 
-    let toNode = (props, obj, payload) => {
-        let element;
-        element = document.createElement('tbody');
-        props.elementModifier(element, props, obj, payload);
-        props.processPayload(element, props, obj, payload);
-        return element;
-    };
-
     props = Object.assign({
-        elementModifier,
+        tagName: 'tbody',
+        row: [],
+        addEventListener: [],
+        afterCreateElement: (element, props, obj, payload) => {
+        },
+        attachEventListener,
         processPayload,
         toNode
     }, props);

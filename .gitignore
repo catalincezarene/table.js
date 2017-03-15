@@ -1,2 +1,9 @@
+.DS_STORE
 node_modules
+*~
 *.log*
+*.sublime-project
+*.sublime-workspace
+.idea
+*.iml
+.vscode

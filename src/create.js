@@ -1,16 +1,7 @@
+import attachEventListener from './util/attach-event-listener';
+import toNode from './util/to-node';
+
 let Create = (props = {}) => {
-    let elementModifier = (element, props) => {
-        if (props.afterCreateElement) {
-            props.afterCreateElement(element);
-        }
-
-        if (props.addEventListener) {
-            props.addEventListener.forEach(param => {
-                element.addEventListener(param.type, param.listener, param.useCapture || false);
-            });
-        }
-    };
-
     let processPayload = (element, props) => {
         if (props['body'].length > 1) {
             props.payload.forEach(payload => {
@@ -25,16 +16,12 @@ let Create = (props = {}) => {
         }
     };
 
-    let toNode = props => {
-        let element;
-        element = document.createElement('table');
-        props.elementModifier(element, props);
-        props.processPayload(element, props);
-        return element;
-    };
-
     props = Object.assign({
-        elementModifier,
+        tagName: 'table',
+        addEventListener: [],
+        afterCreateElement: (element, props, obj, payload) => {
+        },
+        attachEventListener,
         processPayload,
         toNode
     }, props);
