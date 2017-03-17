@@ -3,8 +3,9 @@ import toNode from './util/to-node';
 
 let Body = (props = {}) => {
     let processPayload = (element, props, obj, payload) => {
+        let rowName = Object.values(props.row);
         payload.forEach(payload => {
-            Object.values(props.row).forEach(name => {
+            rowName.forEach(name => {
                 element.appendChild(obj['row'][name].toNode(obj, payload));
             });
         });

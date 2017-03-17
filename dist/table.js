@@ -3,7 +3,7 @@ var Table = (function () {
 
 var attachEventListener = (function (element, props, obj, payload) {
     if (props.addEventListener.length < 1) {
-        return false;
+        return;
     }
     props.addEventListener.forEach(function (param) {
         element.addEventListener(param.type, param.listener, param.useCapture || false);
@@ -24,22 +24,32 @@ var toNode = (function (props, obj, payload) {
 var Create = function Create() {
     var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+    var define = function define(name, stack) {
+        props[name] = props[name] || {};
+        stack.forEach(function (obj) {
+            if (obj.hasOwnProperty('getName')) {
+                props[name][obj.getName()] = obj;
+            }
+        });
+    };
+
     var processPayload = function processPayload(element, props) {
-        if (props['body'].length > 1) {
-            props.payload.forEach(function (payload) {
-                props['body'].forEach(function (body) {
-                    element.appendChild(body.toNode(props, [payload]));
-                });
-            });
-        } else {
-            Object.values(props['body']).forEach(function (body) {
-                element.appendChild(body.toNode(props, props.payload));
-            });
+        var bodyValue = Object.values(props['body']);
+        if (!props.bodyAsRow) {
+            element.appendChild(bodyValue[0].toNode(props, props.payload));
+            return;
         }
+        props.payload.forEach(function (payload) {
+            bodyValue.forEach(function (body) {
+                element.appendChild(body.toNode(props, [payload]));
+            });
+        });
     };
 
     props = Object.assign({
         tagName: 'table',
+        payload: [],
+        bodyAsRow: false,
         addEventListener: [],
         afterCreateElement: function afterCreateElement(element, props, obj, payload) {},
         attachEventListener: attachEventListener,
@@ -48,14 +58,7 @@ var Create = function Create() {
     }, props);
 
     return {
-        define: function define(name, stack) {
-            props[name] = props[name] || {};
-            stack.forEach(function (obj) {
-                if (obj.hasOwnProperty('getName')) {
-                    props[name][obj.getName()] = obj;
-                }
-            });
-        },
+        define: define,
         withPayload: function withPayload(payload) {
             props.payload = payload;
         },
@@ -69,8 +72,9 @@ var Body = function Body() {
     var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var processPayload = function processPayload(element, props, obj, payload) {
+        var rowName = Object.values(props.row);
         payload.forEach(function (payload) {
-            Object.values(props.row).forEach(function (name) {
+            rowName.forEach(function (name) {
                 element.appendChild(obj['row'][name].toNode(obj, payload));
             });
         });
@@ -100,14 +104,15 @@ var Row = function Row() {
     var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var processPayload = function processPayload(element, props, obj, payload) {
-        props.data = props.data || [];
-        (props.data.length < 1 ? Object.keys(obj['data']) : Object.values(props.data)).forEach(function (name) {
+        var dataName = props.data.length > 1 ? Object.values(props.data) : Object.keys(obj['data']);
+        dataName.forEach(function (name) {
             element.appendChild(obj['data'][name].toNode(obj, payload));
         });
     };
 
     props = Object.assign({
         tagName: 'tr',
+        data: [],
         addEventListener: [],
         afterCreateElement: function afterCreateElement(element, props, obj, payload) {},
         attachEventListener: attachEventListener,
